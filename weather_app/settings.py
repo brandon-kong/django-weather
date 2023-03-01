@@ -74,7 +74,6 @@ WSGI_APPLICATION = 'weather_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# pw: test123 (for postgres)
 
 import environ
 env = environ.Env()
