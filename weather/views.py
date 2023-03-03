@@ -46,6 +46,8 @@ def task_detail(request, pk):
     try:
         # obtain the task with the passed id.
         task = Task.objects.get(pk=pk)
+        print(task)
+        return HttpResponse(task)
     except:
         # respond with a 404 error message
         return HttpResponse(status=404)  
