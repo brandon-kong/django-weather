@@ -55,7 +55,7 @@ export default {
     },
 
     setup() {
-        const http = inject('$http', axios)
+        const http = inject('http', axios)
         return {
             http
         }
@@ -65,7 +65,6 @@ export default {
         async getData() {
             try {
                 // fetch tasks
-                console.log(this.http)
                 const response = await this.http.get('http://localhost:8000/api/tasks/');
                 // set the data returned as tasks
                 this.tasks = response.data; 

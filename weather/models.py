@@ -1,25 +1,35 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.utils import timezone
 
 # Create your models here.
-class Teacher(models.Model):
-    name = models.CharField(max_length=100)
-    age = models.IntegerField()
 
-class Student(models.Model):
-    name = models.CharField(max_length=100)
-    age = models.IntegerField()
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+class User(AbstractBaseUser):
+    email = models.EmailField(unique=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_superuser = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(default=timezone.now)
 
-class Task(models.Model):
-    #title
-    title = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True) #description
-    completed = models.BooleanField(default=False)
-    #completed
-    created_at = models.DateTimeField(auto_now_add=True) #created_at
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+    objects = UserManager()
 
     def __str__(self):
-        #return the task title
-        return self.title
+        return self.email
+    
+
+class SavedLocation(models.Model):
+    user = models.ManyToManyField(User)
+    city = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    latitude = models.CharField(max_length=100)
+    longitude = models.CharField(max_length=100)
+    temperature = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
+    icon = models.CharField(max_length=100)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.city + ", " + self.country
