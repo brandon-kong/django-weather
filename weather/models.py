@@ -21,7 +21,7 @@ class User(AbstractBaseUser):
     
 
 class SavedLocation(models.Model):
-    user = models.ManyToManyField(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     latitude = models.CharField(max_length=100)

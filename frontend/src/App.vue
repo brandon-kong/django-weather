@@ -1,76 +1,92 @@
 <template>
     <div>
-      <button
-        class="btn btn-primary btn-margin"
-        v-if="!authenticated"
-        @click="login()">
-        Log In
-      </button>
-  
-      <button
-        class="btn btn-primary btn-margin"
-        v-if="authenticated"
-        @click="privateMessage()">
-        Call Private
-      </button>
-  
-      <button
-        class="btn btn-primary btn-margin"
-        v-if="authenticated"
-        @click="logout()">
-        Log Out
-      </button>
-      {{ message }}
-      <br>
+        <div id="app">
+            <img alt="Vue logo" src="@/assets/logo.png">
+            <form submit="login">
+                <input type="text" v-model="email" placeholder="email">
+                <input type="password" v-model="password" placeholder="password">
+                <button type="submit">Login</button>
+            </form>
+
+        </div>
     </div>
   </template>
 
 <script>
 
-import AuthService from '@/auth/AuthService'
 import axios from 'axios'
-
-const API_URL = 'http://127.0.0.1:8000'
-
-const auth = new AuthService()
 
 export default {
     name: 'App',
-
     data () {
-        this.handleAuthentication()
-            this.authenticated = false
-
-            auth.authNotifier.on('authChange', authState => {
-                this.authenticated = authState.authenticated
-            })
-
         return {
-            authenticated: false,
-            message: ''
+            csrf: '',
+            isAuthenticated: false,
+            email: '',
+            password: '',
         }
     },
 
+    mounted () {
+        this.getSession()
+    },
+
     methods: {
-    // this method calls the AuthService login() method
-        login () {
-            auth.login()
+        login (event) {
+            event.preventDefault()
+            axios.post("http://localhost:8000/api/login/", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": this.csrf,
+                },
+                credentials: "include",
+                body: JSON.stringify({email: this.email, password: this.password}),
+                })
+                .then((data) => {
+                console.log(data);
+                this.isAuthenticated = true
+                })
+                .catch((err) => {
+                console.log(err);
+                this.error = "Wrong username or password."
+            });
         },
-        handleAuthentication () {
-            auth.handleAuthentication()
-        },
-        logout () {
-            auth.logout()
-        },
-        privateMessage () {
-            const url = `${API_URL}/api/private/`
-            return axios.get(url, {headers: {Authorization: `Bearer ${auth.getAuthToken()}`}}).then((response) => {
-                console.log(response.data)
-                this.message = response.data || ''
+
+        getSession () {
+            axios.post('http://localhost:8000/api/session', {
+                credentials: 'include'
             })
+                .then(response => {
+                    console.log(response.data)
+                    if (response.data.isAuthenticated) {
+                        this.isAuthenticated = true
+                    } else {
+                        this.isAuthenticated = false
+                        this.getCSRF()
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        },
+
+        getCSRF () {
+            axios.post('http://localhost:8000/api/csrf', {
+                credentials: 'include'
+            })
+                .then(response => {
+                    console.log(response.data)
+                    let csrfToken = response.headers.get("X-CSRFToken");
+                    this.csrf = csrfToken
+                    console.log(csrfToken);
+                })
+                .catch(error => {
+                    console.log(error)
+                })
         }
     }
 }
+
 
 </script>
 
